@@ -1,0 +1,15 @@
+import multer from "multer";
+
+const upload = multer({
+    storage: multer.diskStorage({
+        destination: (req, file, cb) => {
+            cb(null, "uploads/");
+        },
+        filename: (req, file, cb) => {
+            const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+            cb(null, uniqueSuffix + '.' + file.originalname);
+        },
+    }),
+});
+
+export default upload;
