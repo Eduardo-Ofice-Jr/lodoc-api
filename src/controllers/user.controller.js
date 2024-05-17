@@ -1,7 +1,8 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { db } from "../db/config.js";
+import { db } from "../lib/sqlite.js";
 
+const JWT_SECRET = process.env.JWT_SECRET;
 export const loginController = (req, res) => {
     try {
         const { username, password } = req.body;
@@ -18,11 +19,13 @@ export const loginController = (req, res) => {
 
         const validPassword = bcrypt.compareSync(password, user.password);
         if (!validPassword)
-            return res.status(400).json({ message: "user or password invalid" });
+            return res
+                .status(400)
+                .json({ message: "user or password invalid" });
 
-        // O segredo está exposto aqui de tal forma apenas para fins de exemplo,
-        // mas em uma aplicação real o segredo deve ser gerado e armazenado em um lugar seguro.
-        const token = jwt.sign({ user }, "secret", { expiresIn: "1h" });
+        const token = jwt.sign({ user }, JWT_SECRET, { expiresIn: "1h" });
+        if (!token)
+            return res.status(400).json({ message: "token not created" });
 
         return res.json({
             user: { ...user, password: undefined },
@@ -65,9 +68,9 @@ export const registerController = async (req, res) => {
             .prepare("SELECT * FROM users WHERE username = ?")
             .get(username);
 
-        // O segredo está exposto aqui de tal forma apenas para fins de exemplo,
-        // mas em uma aplicação real o segredo deve ser gerado e armazenado em um lugar seguro.
-        const token = jwt.sign({ user }, "secret", { expiresIn: "1h" });
+        const token = jwt.sign({ user }, JWT_SECRET, { expiresIn: "1h" });
+        if (!token)
+            return res.status(400).json({ message: "token not created" });
 
         return res.json({
             user: { ...user, password: undefined },
