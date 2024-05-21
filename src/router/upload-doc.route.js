@@ -1,15 +1,11 @@
 import { Router } from "express";
+import { getDocs, uploadDoc } from "../controllers/upload-doc.controller.js";
 import upload from "../lib/multer.js";
+import { jwtVerify } from "../middleware/jwt-verify.js";
 
 const router = Router();
 
-router.post("/upload-doc", upload.single("file"), (req, res, next) => {
-    if (!req.file)
-        return res.status(400).json({ message: "file not uploaded" });
-
-    const file = req.file;
-    console.log(file);
-    res.status(200).json({ message: "file uploaded" });
-});
+router.post("/upload-doc", jwtVerify, upload.single("file"), uploadDoc);
+router.get("/get-docs", jwtVerify, getDocs);
 
 export default router;
