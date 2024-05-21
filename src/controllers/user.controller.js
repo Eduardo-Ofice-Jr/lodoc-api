@@ -23,12 +23,14 @@ export const loginController = (req, res) => {
                 .status(400)
                 .json({ message: "user or password invalid" });
 
-        const token = jwt.sign({ user }, JWT_SECRET, { expiresIn: "1h" });
+        delete user.password;
+
+        const token = jwt.sign({ ...user }, JWT_SECRET, { expiresIn: "1h" });
         if (!token)
             return res.status(400).json({ message: "token not created" });
 
         return res.json({
-            user: { ...user, password: undefined },
+            user,
             token,
             message: "user logged in",
         });
@@ -68,23 +70,18 @@ export const registerController = async (req, res) => {
             .prepare("SELECT * FROM users WHERE username = ?")
             .get(username);
 
+        delete user.password;
+
         const token = jwt.sign({ user }, JWT_SECRET, { expiresIn: "1h" });
         if (!token)
             return res.status(400).json({ message: "token not created" });
 
         return res.json({
-            user: { ...user, password: undefined },
+            user,
             token,
             message: "user created",
         });
     } catch (error) {
         console.log(error);
     }
-};
-
-export const createUserTable = (req, res, next) => {
-    db.prepare(
-        "CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, password TEXT)"
-    ).run();
-    next();
 };
