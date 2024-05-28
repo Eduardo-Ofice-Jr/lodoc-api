@@ -8,6 +8,9 @@ export const uploadDoc = async (req, res, next) => {
         if (!req.file)
             return res.status(400).json({ message: "file not uploaded" });
 
+        if (!req.user.id)
+            return res.status(400).json({ message: "user_id not found in request token" });
+
         const timestamp = new Date().toLocaleString();
         const doc = db
             .prepare(
